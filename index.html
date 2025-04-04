@@ -1,96 +1,150 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的网页</title>
+    <title>在线电台</title>
     <style>
-        /* 基本CSS样式 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-
-        header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-        }
-
-        nav {
-            background-color: #34495e;
-            padding: 1rem;
-        }
-
-        nav ul {
-            list-style-type: none;
             display: flex;
             justify-content: center;
-            gap: 2rem;
-        }
-
-        nav a {
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             color: white;
-            text-decoration: none;
         }
-
-        nav a:hover {
-            color: #3498db;
-        }
-
-        .main-content {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        footer {
-            background-color: #2c3e50;
-            color: white;
+        .container {
             text-align: center;
-            padding: 1rem;
-            position: fixed;
-            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            max-width: 350px;
+            width: 90%;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .radio-list {
+            list-style: none;
+            padding: 0;
+        }
+        .radio-list li {
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #ffcc00;
+            color: black;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
             width: 100%;
+        }
+        button:hover {
+            background-color: #ffaa00;
+        }
+        button.active {
+            background-color: #00cc00;
+            color: white;
+        }
+        audio {
+            margin-top: 20px;
+            width: 100%;
+        }
+        #status {
+            margin-top: 10px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>欢迎来到我的网页</h1>
-    </header>
-
-    <nav>
-        <ul>
-            <li><a href="#home">首页</a></li>
-            <li><a href="#about">关于</a></li>
-            <li><a href="#contact">联系</a></li>
+    <div class="container">
+        <h1>🎵 在线电台 🎵</h1>
+        <ul class="radio-list">
+            <li><button onclick="playRadio(this, 'https://stream-relay-geo.ntslive.net/stream')">NTS Radio (London)</button></li>
+            <li><button onclick="playRadio(this, 'https://live-radio01.mediahubaustralia.com/2LRW/mp3')">ABC Classic (Australia)</button></li>
+            <li><button onclick="playRadio(this, 'https://stream.wbez.org/wbez128.mp3')">NPR (USA)</button></li>
+            <li><button onclick="playRadio(this, 'http://icecast.radiofrance.fr/francemusiqueambient-mp3')">Ambient Chill</button></li>
+            <li><button onclick="playRadio(this, 'http://icecast.radiofrance.fr/francemusiqueeasyclassique-mp3')">Piano Relax</button></li>
+            <li><button onclick="playRadio(this, 'http://stream.livex.fm/lofi')">Lo-Fi Beats</button></li>
+            <li><button onclick="playRadio(this, 'http://stream.zeno.fm/2v3k8nqevfeuv')">Nature Sounds</button></li>
+            <li><button onclick="playRadio(this, 'http://icecast.radiofrance.fr/francemusiqueclassique-mp3')">Classical Guitar</button></li>
+            <li><button onclick="playRadio(this, 'https://live-bauer-al.sharp-stream.com/kissfresh.mp3')">KISS Fresh (UK)</button></li>
+            <li><button onclick="playRadio(this, 'https://radio.stereoscenic.com/asp-h.mp3')">Ambient Sleeping Pill</button></li>
         </ul>
-    </nav>
-
-    <div class="main-content">
-        <h2>主要内容</h2>
-        <p>这是一个简单的网页模板，你可以在这里添加自己的内容。</p>
-        <p>特点包括：
-            <ul>
-                <li>响应式设计</li>
-                <li>简洁的导航栏</li>
-                <li>现代化的配色方案</li>
-                <li>易于修改的结构</li>
-            </ul>
-        </p>
+        <audio id="radioPlayer" controls>
+            <source id="radioSource" src="" type="audio/mpeg">
+            您的浏览器不支持音频播放。
+        </audio>
+        <div id="status"></div>
     </div>
+    <script>
+        let currentButton = null;
+        const player = document.getElementById('radioPlayer');
+        const source = document.getElementById('radioSource');
+        const status = document.getElementById('status');
+        let timeoutId = null;
 
-    <footer>
-        <p>&copy; 2025 我的网页。保留所有权利。</p>
-    </footer>
+        function playRadio(button, url) {
+            const allButtons = document.querySelectorAll('.radio-list button');
+
+            if (currentButton) {
+                player.pause();
+                player.currentTime = 0;
+                allButtons.forEach(btn => btn.classList.remove('active'));
+                clearTimeout(timeoutId);
+            }
+
+            button.classList.add('active');
+            currentButton = button;
+
+            status.textContent = '正在加载...';
+            status.style.color = '#ffcc00';
+            source.src = url;
+            player.load();
+
+            timeoutId = setTimeout(() => {
+                if (status.textContent === '正在加载...') {
+                    status.textContent = '加载超时：无法连接到音频流';
+                    status.style.color = '#ff4444';
+                    button.classList.remove('active');
+                    currentButton = null;
+                }
+            }, 10000);
+
+            player.onloadeddata = () => {
+                clearTimeout(timeoutId);
+                const playPromise = player.play();
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => {
+                            player.volume = 0.2;
+                            status.textContent = `正在播放：${button.textContent}`;
+                            status.style.color = '#00ff00';
+                        })
+                        .catch(error => {
+                            clearTimeout(timeoutId);
+                            status.textContent = `播放失败：${error.message}`;
+                            status.style.color = '#ff4444';
+                            button.classList.remove('active');
+                            currentButton = null;
+                        });
+                }
+            };
+
+            player.onerror = () => {
+                clearTimeout(timeoutId);
+                status.textContent = '加载失败：无法连接到音频流';
+                status.style.color = '#ff4444';
+                button.classList.remove('active');
+                currentButton = null;
+            };
+        }
+    </script>
 </body>
 </html>
